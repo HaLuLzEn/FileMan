@@ -10,13 +10,17 @@ public class GlobalKeyListener {
             @Override
             public boolean dispatchKeyEvent(KeyEvent e) {
                 if (e.getID() == KeyEvent.KEY_PRESSED) {
-                    switch (e.getKeyCode()) {
-                        default:
-                            System.out.println(e.getKeyCode());
-                            break;
+                    if (e.isControlDown()) {
+                        switch (e.getKeyCode()) {
+                            case KeyEvent.VK_W:
+                                System.exit(0);
+                                break;
+                            default:
+                                System.out.println(e.getKeyCode());
+                                break;
+                        }
                     }
                 }
-                // Return false to allow the key event to be dispatched to the focused component
                 return false;
             }
         });

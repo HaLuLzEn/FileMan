@@ -6,11 +6,13 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.nio.file.Paths;
 
 public class ViewPanel extends JPanel {
     private static final int ICON_SIZE = 64; // Size of the icon
     private static final int ROWS = 5; // Rows set to 0 for variable number of rows
     private static final int COLS = 4; // Adjust based on your needs
+    private File currentFile;
 
     public ViewPanel(String directoryPath, MainPanel panel) {
         setLayout(new GridLayout(ROWS, COLS));
@@ -47,7 +49,9 @@ public class ViewPanel extends JPanel {
 
                         @Override
                         public void mouseEntered(MouseEvent e) {
-                            label.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                            label.setBackground(Color.BLUE);
+                            label.setBorder(BorderFactory.createLineBorder(Color.BLUE));
+                            currentFile = new File(panel.getCurrentDirectory() + label.getText());
                             repaint();
                         }
 
