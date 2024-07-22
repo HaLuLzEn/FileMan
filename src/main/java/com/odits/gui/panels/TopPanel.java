@@ -1,19 +1,21 @@
 package com.odits.gui.panels;
 
-import com.odits.Main;
 import com.odits.gui.components.CustomMenuItem;
 import com.odits.utils.IconLoader;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileSystemView;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.Objects;
 
 public class TopPanel extends JPanel {
     private MainPanel mainPanel;
     private boolean iconView = true;
+    private static JLabel dirLabel = new JLabel(System.getProperty("user.dir"));
     public TopPanel(MainPanel mainPanel) {
         super();
         this.mainPanel = mainPanel;
@@ -74,6 +76,14 @@ public class TopPanel extends JPanel {
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(false);
 
+        JButton homeButton = new JButton();
+        ImageIcon homeIcon = IconLoader.loadIcon("/Icons/Home-icon.png");
+        homeIcon.setImage(homeIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
+        homeButton.setIcon(homeIcon);
+        homeButton.setActionCommand("Home");
+        homeButton.addActionListener(topPanelListener);
+        toolBar.add(homeButton);
+
         JButton parentButton = new JButton();
         ImageIcon parentIcon = IconLoader.loadIcon("/Icons/back-arrow.png");
         parentIcon.setImage(parentIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
@@ -89,8 +99,15 @@ public class TopPanel extends JPanel {
         copyButton.setActionCommand("Copy");
         toolBar.add(copyButton);
 
+
+        toolBar.add(dirLabel);
+
         this.add(menuBar, 0);
         this.add(toolBar, 1);
+    }
+
+    public static void reloadLabel(String text) {
+        dirLabel.setText(text);
     }
 }
 
@@ -128,14 +145,21 @@ class TopPanelListener implements ActionListener {
                     fileChooser.showDialog(mainPanel, "Open");
                     mainPanel.reloadViewPanel(fileChooser.getSelectedFile().getAbsolutePath());
                 } else {
-                    System.out.println("New Folder");
+                    JOptionPane.showInputDialog(mainPanel, "Type the name of the new Directory", "Enter name", JOptionPane.INFORMATION_MESSAGE);
                 }
                 break;
             case "Tree":
                 mainPanel.getTreeScrollPane().setVisible(((JCheckBoxMenuItem) e.getSource()).isSelected());
+                mainPanel.repaint();
+                break;
+            case "Home":
+                mainPanel.currentDirectory = FileSystemView.getFileSystemView().getHomeDirectory();
+                mainPanel.reloadViewPanel(mainPanel.currentDirectory.toString());
+                mainPanel.reloadTree(mainPanel.currentDirectory);
                 break;
             case "Parent":
                 mainPanel.reloadViewPanel(mainPanel.getCurrentDirectory().getParent());
+                mainPanel.reloadTree(mainPanel.getCurrentDirectory().getParentFile());
                 break;
             case "Copy":
                 String copyFileName = JOptionPane.showInputDialog(mainPanel, "Enter the name of the file to copy");

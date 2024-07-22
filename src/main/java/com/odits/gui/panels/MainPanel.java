@@ -1,34 +1,56 @@
 package com.odits.gui.panels;
 
+import com.odits.listeners.GlobalKeyListener;
+
 import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
+import javax.swing.event.*;
+import javax.swing.filechooser.FileSystemView;
+import javax.swing.tree.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.io.File;
 
-public class MainPanel extends JPanel implements KeyListener {
-    // Components to be accessed
+
+public class MainPanel extends JPanel {
     JTree tree = new JTree();
     JScrollPane treeScrollPane = new JScrollPane(tree);
     ViewPanel viewPanel = new ViewPanel(System.getProperty("user.dir"), this);
     JScrollPane viewScrollPane = new JScrollPane(viewPanel);
     File currentDirectory = new File(System.getProperty("user.dir"));
+    JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+
     public MainPanel() {
         super();
+        GlobalKeyListener.initGlobalKeyListener(this);
         setLayout(new BorderLayout());
 
-        treeScrollPane.setPreferredSize(new Dimension(175, 0));
 
-        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode("Test");
-        rootNode = setDirectoryContentToNode(rootNode);
 
-        DefaultTreeModel treeModel = new DefaultTreeModel(rootNode);
+        tree.setMinimumSize(new Dimension(175, 0));
+        tree.setPreferredSize(new Dimension(200, 0));
+
+        treeScrollPane.setPreferredSize(tree.getPreferredSize());
+
+        DefaultTreeModel treeModel = createTreeModel(new File(FileSystemView.getFileSystemView().getHomeDirectory().getAbsolutePath()));
         tree.setModel(treeModel);
+        tree.addTreeSelectionListener(e -> {
+            TreePath path = e.getPath();
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
+            File file = (File) node.getUserObject();
 
-        this.add(treeScrollPane, BorderLayout.WEST);
-        this.add(viewScrollPane, BorderLayout.CENTER);
+            if (file.isDirectory()) {
+                loadContents(file, node);
+                reloadViewPanel(file.getPath());
+            }
+
+
+        });
+        tree.setDragEnabled(true);
+        tree.setCellRenderer(new FileCellRenderer());
+
+        splitPane.add(treeScrollPane);
+        splitPane.add(viewScrollPane);
+
+        this.add(splitPane);
         this.add(new TopPanel(this), BorderLayout.NORTH);
     }
 
@@ -36,57 +58,78 @@ public class MainPanel extends JPanel implements KeyListener {
         return treeScrollPane;
     }
 
-    public DefaultMutableTreeNode setDirectoryContentToNode(DefaultMutableTreeNode node) {
-        File dir = new File(node.getUserObject().toString());
-        if (dir.exists() && dir.isDirectory()) {
-            File[] files = dir.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(file.getName());
-                    if (file.isDirectory()) {
-                        // Recursively add directory contents
-                        setDirectoryContentToNode(childNode);
-                    }
-                    node.add(childNode);
-                }
-            }
+    public void reloadTree(File directroy) {
+        if (directroy != null) {
+            DefaultTreeModel treeModel = createTreeModel(directroy);
+            tree.setModel(treeModel);
+            repaint();
         }
-        return node;
-    }
-
-    public void reloadTree() {
-        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode("Test");
-        rootNode = setDirectoryContentToNode(rootNode);
-        DefaultTreeModel treeModel = new DefaultTreeModel(rootNode);
-        tree.setModel(treeModel);
     }
 
     public void reloadViewPanel(String directoryPath) {
-        currentDirectory = new File(directoryPath);
-        this.remove(viewScrollPane);
-        viewPanel = new ViewPanel(directoryPath, this);
-        viewScrollPane = new JScrollPane(viewPanel);
-        this.add(viewScrollPane, BorderLayout.CENTER);
-        this.revalidate();
-        this.repaint();
+        if (directoryPath != null) {
+            currentDirectory = new File(directoryPath);
+            splitPane.remove(viewScrollPane);
+            viewPanel = new ViewPanel(directoryPath, this);
+            viewScrollPane = new JScrollPane(viewPanel);
+            TopPanel.reloadLabel(directoryPath);
+            splitPane.add(viewScrollPane);
+            this.revalidate();
+            this.repaint();
+        }
     }
 
     public File getCurrentDirectory() {
         return new File(currentDirectory.getAbsolutePath());
     }
 
-    @Override
-    public void keyTyped(KeyEvent e) {
-
+    public void switchView() {
+        viewPanel.setIconView(!viewPanel.isIconView());
+        reloadViewPanel(currentDirectory.getAbsolutePath());
     }
 
-    @Override
-    public void keyPressed(KeyEvent e) {
-        System.out.println(e.getKeyCode());
+    private DefaultTreeModel createTreeModel(File rootDirectory) {
+        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(rootDirectory);
+        createNodes(rootNode, rootDirectory);
+        return new DefaultTreeModel(rootNode);
     }
 
-    @Override
-    public void keyReleased(KeyEvent e) {
 
+    private void createNodes(DefaultMutableTreeNode node, File file) {
+        if (file.isDirectory()) {
+            File[] files = file.listFiles();
+            if (files != null) {
+                for (File childFile : files) {
+                    DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(childFile);
+                    node.add(childNode);
+                }
+            }
+        }
+    }
+
+    private void loadContents(File file, DefaultMutableTreeNode rootNode) {
+        File[] contents = file.listFiles();
+
+        for (File f: contents) {
+            DefaultMutableTreeNode node = new DefaultMutableTreeNode(f);
+            rootNode.add(node);
+        }
+    }
+
+
+}
+
+class FileCellRenderer extends JLabel implements TreeCellRenderer {
+    @Override
+    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
+        File currentNode = (File) node.getUserObject();
+        if (currentNode != null) {
+            setText(currentNode.getName());
+            setIcon(FileSystemView.getFileSystemView().getSystemIcon(currentNode));
+        } else {
+            setText(" ");
+        }
+        return this;
     }
 }
