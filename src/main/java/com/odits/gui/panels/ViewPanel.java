@@ -4,6 +4,7 @@ import com.odits.gui.components.CustomMenuItem;
 import com.odits.gui.components.CustomPopupMenu;
 import com.odits.gui.components.CustomPopupMenuEmpty;
 import com.odits.gui.components.IconLabel;
+import com.odits.utils.IconLoader;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
@@ -13,6 +14,8 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+
+import static com.odits.utils.IconLoader.darkMode;
 
 public class ViewPanel extends JPanel {
     private static final int ICON_SIZE = 32; // Size of the icon
@@ -35,18 +38,25 @@ public class ViewPanel extends JPanel {
                 for (File file : files) {
                     // Create an icon and label for each file
                     ImageIcon icon = (ImageIcon) FileSystemView.getFileSystemView().getSystemIcon(file);
+                    if (file.isDirectory()) {
+                        if (darkMode) {
+                            icon = IconLoader.loadIcon("/Icons/folder-icon-dark.png");
+                            icon.setImage(icon.getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_SMOOTH));
+                        } else {
+                            icon = IconLoader.loadIcon("/Icons/folder-icon.png");
+                            icon.setImage(icon.getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_SMOOTH));
+                        }
+                    }
                     IconLabel ilabel = new IconLabel(file.getName(), new ImageIcon(icon.getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_SMOOTH)), JLabel.CENTER, file.getAbsolutePath());
                     ilabel.setVerticalTextPosition(JLabel.BOTTOM);
                     ilabel.setHorizontalTextPosition(JLabel.CENTER);
                     ilabel.setComponentPopupMenu(new CustomPopupMenu());
 
 
-
                     ilabel.addMouseListener(new MouseAdapter() {
                         @Override
                         public void mouseClicked(MouseEvent e) {
                             if (ilabel.isSelected()) {
-                                System.out.println("Selected file: " + ilabel.getText());
                                 try {
                                     if (file.isDirectory()) {
                                         panel.reloadViewPanel(file.getAbsolutePath());
@@ -86,7 +96,7 @@ public class ViewPanel extends JPanel {
 
                         @Override
                         public void mouseDragged(MouseEvent e) {
-                            
+
                         }
                     });
                     add(ilabel);
@@ -96,13 +106,17 @@ public class ViewPanel extends JPanel {
     }
 
     public static void executeFile(String filePath) {
+        System.out.println("Executing file: " + filePath);
         try {
             if (System.getProperty("os.name").toLowerCase().contains("win")) {
                 Runtime.getRuntime().exec("cmd /c start \"\" \"" + filePath + "\"");
             } else {
-                Runtime.getRuntime().exec(new String[]{
-                        "xdg-open", filePath
-                });
+                if (filePath.endsWith(".AppImage"))
+                    Runtime.getRuntime().exec(filePath);
+                else
+                    Runtime.getRuntime().exec(new String[]{
+                            "xdg-open", filePath
+                    });
             }
         } catch (IOException e) {
             e.printStackTrace();

@@ -3,6 +3,7 @@ package com.odits.utils;
 import javax.swing.*;
 
 public class IconLoader {
+    public static boolean darkMode = false;
     public static ImageIcon loadIcon(String path) {
         java.net.URL imgURL = IconLoader.class.getResource(path);
         if (imgURL != null) {

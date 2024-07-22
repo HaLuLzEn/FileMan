@@ -5,22 +5,30 @@ import com.odits.utils.IconLoader;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.List;
+
+import static com.odits.utils.IconLoader.darkMode;
 
 public class TopPanel extends JPanel {
     private MainPanel mainPanel;
     private boolean iconView = true;
     private static JLabel dirLabel = new JLabel(System.getProperty("user.dir"));
+    private JButton homeButton = new JButton();
+    private JButton parentButton = new JButton();
+    private JButton copyButton = new JButton();
+    private JToolBar toolBar = new JToolBar();
+    private TopPanelListener topPanelListener;
     public TopPanel(MainPanel mainPanel) {
         super();
         this.mainPanel = mainPanel;
+        topPanelListener = new TopPanelListener(mainPanel);
+
         setLayout(new GridLayout(2, 1));
-        TopPanelListener topPanelListener = new TopPanelListener(mainPanel);
+
 
         JMenuBar menuBar = new JMenuBar();
 
@@ -63,6 +71,13 @@ public class TopPanel extends JPanel {
         viewButtonGroup.add(listViewCheckBoxMI);
         viewMenu.add(listViewCheckBoxMI);
 
+        JCheckBoxMenuItem darkViewButton = new JCheckBoxMenuItem("Dark Theme");
+        darkViewButton.setSelected(false);
+        darkViewButton.addActionListener(e -> {
+            darkMode = darkViewButton.isSelected();
+            setTheme(darkMode);
+        });
+        viewMenu.add(darkViewButton);
 
         fileMenu.add(newSubMenu, 0);
         fileMenu.add(openSubMenu);
@@ -73,30 +88,13 @@ public class TopPanel extends JPanel {
 
 
 
-        JToolBar toolBar = new JToolBar();
+
         toolBar.setFloatable(false);
 
-        JButton homeButton = new JButton();
-        ImageIcon homeIcon = IconLoader.loadIcon("/Icons/Home-icon.png");
-        homeIcon.setImage(homeIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
-        homeButton.setIcon(homeIcon);
-        homeButton.setActionCommand("Home");
-        homeButton.addActionListener(topPanelListener);
+        setTheme(darkViewButton.isSelected());
+        addButtons();
         toolBar.add(homeButton);
-
-        JButton parentButton = new JButton();
-        ImageIcon parentIcon = IconLoader.loadIcon("/Icons/back-arrow.png");
-        parentIcon.setImage(parentIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
-        parentButton.setIcon(parentIcon);
-        parentButton.setActionCommand("Parent");
-        parentButton.addActionListener(topPanelListener);
         toolBar.add(parentButton);
-
-        JButton copyButton = new JButton();
-        ImageIcon copyIcon = IconLoader.loadIcon("/Icons/copy.png");
-        copyIcon.setImage(copyIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
-        copyButton.setIcon(copyIcon);
-        copyButton.setActionCommand("Copy");
         toolBar.add(copyButton);
 
 
@@ -108,6 +106,49 @@ public class TopPanel extends JPanel {
 
     public static void reloadLabel(String text) {
         dirLabel.setText(text);
+    }
+
+    public void setTheme(boolean dark) {
+        ImageIcon homeIcon;
+        ImageIcon parentIcon;
+        ImageIcon copyIcon;
+
+        if (dark) {
+            homeIcon = IconLoader.loadIcon("/Icons/Home-icon-dark.png");
+            homeIcon.setImage(homeIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
+            homeButton.setIcon(homeIcon);
+
+            parentIcon = IconLoader.loadIcon("/Icons/back-arrow-dark.png");
+            parentIcon.setImage(parentIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
+            parentButton.setIcon(parentIcon);
+
+            copyIcon = IconLoader.loadIcon("/Icons/copy-icon-dark.png");
+        } else {
+            homeIcon = IconLoader.loadIcon("/Icons/Home-icon.png");
+            homeIcon.setImage(homeIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
+            homeButton.setIcon(homeIcon);
+
+            parentIcon = IconLoader.loadIcon("/Icons/back-arrow.png");
+            parentIcon.setImage(parentIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
+            parentButton.setIcon(parentIcon);
+
+            copyIcon = IconLoader.loadIcon("/Icons/copy.png");
+        }
+        copyIcon.setImage(copyIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
+        copyButton.setIcon(copyIcon);
+        repaint();
+    }
+
+    public void addButtons() {
+        homeButton.setActionCommand("Home");
+        homeButton.addActionListener(topPanelListener);
+
+
+        parentButton.setActionCommand("Parent");
+        parentButton.addActionListener(topPanelListener);
+
+        copyButton.setActionCommand("Copy");
+        copyButton.addActionListener(topPanelListener);
     }
 }
 

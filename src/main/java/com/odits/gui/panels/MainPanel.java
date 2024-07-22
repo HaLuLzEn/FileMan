@@ -1,13 +1,17 @@
 package com.odits.gui.panels;
 
 import com.odits.listeners.GlobalKeyListener;
+import com.odits.utils.IconLoader;
 
 import javax.swing.*;
-import javax.swing.event.*;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.tree.*;
 import java.awt.*;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.odits.utils.IconLoader.darkMode;
 
 
 public class MainPanel extends JPanel {
@@ -23,12 +27,9 @@ public class MainPanel extends JPanel {
         GlobalKeyListener.initGlobalKeyListener(this);
         setLayout(new BorderLayout());
 
+        treeScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        treeScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
-
-        tree.setMinimumSize(new Dimension(175, 0));
-        tree.setPreferredSize(new Dimension(200, 0));
-
-        treeScrollPane.setPreferredSize(tree.getPreferredSize());
 
         DefaultTreeModel treeModel = createTreeModel(new File(FileSystemView.getFileSystemView().getHomeDirectory().getAbsolutePath()));
         tree.setModel(treeModel);
@@ -36,14 +37,12 @@ public class MainPanel extends JPanel {
             TreePath path = e.getPath();
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
             File file = (File) node.getUserObject();
-
             if (file.isDirectory()) {
                 loadContents(file, node);
                 reloadViewPanel(file.getPath());
             }
-
-
         });
+
         tree.setDragEnabled(true);
         tree.setCellRenderer(new FileCellRenderer());
 
@@ -74,6 +73,7 @@ public class MainPanel extends JPanel {
             viewScrollPane = new JScrollPane(viewPanel);
             TopPanel.reloadLabel(directoryPath);
             splitPane.add(viewScrollPane);
+            splitPane.setDividerLocation(200);
             this.revalidate();
             this.repaint();
         }
@@ -83,17 +83,11 @@ public class MainPanel extends JPanel {
         return new File(currentDirectory.getAbsolutePath());
     }
 
-    public void switchView() {
-        viewPanel.setIconView(!viewPanel.isIconView());
-        reloadViewPanel(currentDirectory.getAbsolutePath());
-    }
-
     private DefaultTreeModel createTreeModel(File rootDirectory) {
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(rootDirectory);
         createNodes(rootNode, rootDirectory);
         return new DefaultTreeModel(rootNode);
     }
-
 
     private void createNodes(DefaultMutableTreeNode node, File file) {
         if (file.isDirectory()) {
@@ -110,13 +104,23 @@ public class MainPanel extends JPanel {
     private void loadContents(File file, DefaultMutableTreeNode rootNode) {
         File[] contents = file.listFiles();
 
-        for (File f: contents) {
+        assert contents != null;
+        for (File f : contents) {
             DefaultMutableTreeNode node = new DefaultMutableTreeNode(f);
             rootNode.add(node);
+
         }
     }
 
-
+    public List<String> listContents(File file) {
+        List<String> contents = new ArrayList<String>();
+        File[] files = file.listFiles();
+        assert files != null;
+        for (File f : files) {
+            contents.add(f.getName());
+        }
+        return contents;
+    }
 }
 
 class FileCellRenderer extends JLabel implements TreeCellRenderer {
@@ -124,11 +128,19 @@ class FileCellRenderer extends JLabel implements TreeCellRenderer {
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
         File currentNode = (File) node.getUserObject();
-        if (currentNode != null) {
+        if (currentNode != null && currentNode.isDirectory()) {
             setText(currentNode.getName());
-            setIcon(FileSystemView.getFileSystemView().getSystemIcon(currentNode));
+            if (darkMode) {
+                ImageIcon icon = IconLoader.loadIcon("/Icons/folder-icon-dark.png");
+                icon.setImage(icon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
+                setIcon(icon);
+            } else {
+                ImageIcon icon = IconLoader.loadIcon("/Icons/folder-icon.png");
+                icon.setImage(icon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
+                setIcon(icon);
+            }
         } else {
-            setText(" ");
+            setText(currentNode.getAbsoluteFile().getName());
         }
         return this;
     }
