@@ -15,7 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 
-import static com.odits.utils.IconLoader.darkMode;
+import static com.odits.Main.darkMode;
 
 public class ViewPanel extends JPanel {
     private static final int ICON_SIZE = 32; // Size of the icon

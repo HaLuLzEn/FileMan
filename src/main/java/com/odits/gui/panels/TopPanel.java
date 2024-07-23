@@ -11,7 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 
-import static com.odits.utils.IconLoader.darkMode;
+import static com.odits.Main.darkMode;
 
 public class TopPanel extends JPanel {
     private boolean iconView = true;
@@ -72,7 +72,7 @@ public class TopPanel extends JPanel {
         viewMenu.add(listViewCheckBoxMI);
 
         JCheckBoxMenuItem darkViewButton = new JCheckBoxMenuItem("Dark Theme");
-        darkViewButton.setSelected(false);
+        darkViewButton.setSelected(darkMode);
         darkViewButton.addActionListener(e -> {
             darkMode = darkViewButton.isSelected();
             mainFrame.setTheme(darkMode);

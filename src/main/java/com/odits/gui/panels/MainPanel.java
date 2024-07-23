@@ -1,5 +1,6 @@
 package com.odits.gui.panels;
 
+import com.odits.gui.components.CustomPopupMenu;
 import com.odits.gui.frames.MainFrame;
 import com.odits.listeners.GlobalKeyListener;
 import com.odits.utils.IconLoader;
@@ -12,7 +13,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.odits.utils.IconLoader.darkMode;
+import static com.odits.Main.darkMode;
 
 
 public class MainPanel extends JPanel {
@@ -55,7 +56,7 @@ public class MainPanel extends JPanel {
         });
 
         tree.setDragEnabled(true);
-        tree.setCellRenderer(new FileCellRenderer());
+        tree.setCellRenderer(new FileCellRenderer(viewPanel, this));
         System.out.println(tree.getLayout());
 
         splitPane.add(treeScrollPane);
@@ -147,6 +148,13 @@ public class MainPanel extends JPanel {
 }
 
 class FileCellRenderer extends JLabel implements TreeCellRenderer {
+    public FileCellRenderer(ViewPanel viewPanel, MainPanel mainPanel) {
+        this.setComponentPopupMenu(new CustomPopupMenu(viewPanel, mainPanel));
+    }
+
+    public FileCellRenderer() {
+
+    }
     @Override
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
