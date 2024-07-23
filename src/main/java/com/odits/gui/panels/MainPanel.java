@@ -1,5 +1,6 @@
 package com.odits.gui.panels;
 
+import com.odits.gui.frames.MainFrame;
 import com.odits.listeners.GlobalKeyListener;
 import com.odits.utils.IconLoader;
 
@@ -22,7 +23,7 @@ public class MainPanel extends JPanel {
     JScrollPane viewScrollPane;
     JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
-    public MainPanel() {
+    public MainPanel(MainFrame mainFrame) {
         super();
         GlobalKeyListener.initGlobalKeyListener(this);
         setLayout(new BorderLayout());
@@ -41,6 +42,10 @@ public class MainPanel extends JPanel {
         tree.setModel(treeModel);
         tree.addTreeSelectionListener(e -> {
             TreePath path = e.getPath();
+            if (viewPanel.getSelectedIconPath() != null) {
+                viewPanel.getSelectedIconLabel().setSelected(false);
+                viewPanel.setSelectedIconLabel(null);
+            }
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
             File file = (File) node.getUserObject();
             if (file.isDirectory()) {
@@ -58,7 +63,7 @@ public class MainPanel extends JPanel {
         splitPane.setDividerLocation(200);
 
         this.add(splitPane);
-        this.add(new TopPanel(this), BorderLayout.NORTH);
+        this.add(new TopPanel(this, viewPanel, mainFrame), BorderLayout.NORTH);
     }
 
     public JScrollPane getTreeScrollPane() {

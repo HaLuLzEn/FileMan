@@ -25,7 +25,7 @@ public class ViewPanel extends JPanel {
     private File currentFile;
     private boolean iconView = true;
 
-    public ViewPanel(String directoryPath, MainPanel panel) {
+    public ViewPanel(String directoryPath, MainPanel mainPanel) {
         setLayout(new GridLayout(ROWS, COLS));
         File dir = new File(directoryPath);
         this.setComponentPopupMenu(new CustomPopupMenuEmpty());
@@ -50,7 +50,7 @@ public class ViewPanel extends JPanel {
                     IconLabel ilabel = new IconLabel(file.getName(), new ImageIcon(icon.getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_SMOOTH)), JLabel.CENTER, file.getAbsolutePath());
                     ilabel.setVerticalTextPosition(JLabel.BOTTOM);
                     ilabel.setHorizontalTextPosition(JLabel.CENTER);
-                    ilabel.setComponentPopupMenu(new CustomPopupMenu(this));
+                    ilabel.setComponentPopupMenu(new CustomPopupMenu(this, mainPanel));
 
 
                     ilabel.addMouseListener(new MouseAdapter() {
@@ -59,8 +59,8 @@ public class ViewPanel extends JPanel {
                             if (ilabel.isSelected()) {
                                 try {
                                     if (file.isDirectory()) {
-                                        panel.reloadViewPanel(file.getAbsolutePath());
-                                        panel.reloadTree(file.getAbsoluteFile());
+                                        mainPanel.reloadViewPanel(file.getAbsolutePath());
+                                        mainPanel.reloadTree(file.getAbsoluteFile());
                                     } else {
                                         executeFile(file.getAbsolutePath());
                                     }
@@ -86,8 +86,11 @@ public class ViewPanel extends JPanel {
 
                         @Override
                         public void mouseEntered(MouseEvent e) {
-                            ilabel.setBorder(BorderFactory.createLineBorder(Color.BLUE));
-                            currentFile = new File(panel.getCurrentDirectory() + ilabel.getText());
+                            if (darkMode)
+                                ilabel.setBorder(BorderFactory.createLineBorder(Color.CYAN));
+                            else
+                                ilabel.setBorder(BorderFactory.createLineBorder(Color.BLUE));
+                            currentFile = new File(mainPanel.getCurrentDirectory() + ilabel.getText());
                             repaint();
                         }
 
@@ -111,6 +114,14 @@ public class ViewPanel extends JPanel {
 
     public String getSelectedIconPath() {
         return selectedLabel.getPath();
+    }
+
+    public IconLabel getSelectedIconLabel() {
+        return selectedLabel;
+    }
+
+    public void setSelectedIconLabel(IconLabel label) {
+        selectedLabel = label;
     }
 
     public static void executeFile(String filePath) {

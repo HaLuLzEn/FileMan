@@ -25,22 +25,45 @@ public class MainFrame extends JFrame implements KeyListener {
 
         try {
             if (System.getProperty("os.name").toLowerCase().contains("win")) {
-                //UIManager.setLookAndFeel("com.formdev.flatlaf.themes.FlatMacDarkLaf");
                 UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
             } else if (System.getProperty("os.name").toLowerCase().contains("mac")) {
                 UIManager.setLookAndFeel("com.sun.java.swing.plaf.mac.MacLookAndFeel");
             } else {
                 UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
             }
-
+            SwingUtilities.updateComponentTreeUI(this);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
 
-        add(new MainPanel());
+        add(new MainPanel(this));
         setLocationRelativeTo(null);
         setVisible(true);
+    }
+
+    public void setTheme(boolean darkTheme) {
+        String os = System.getProperty("os.name").toLowerCase();
+        try {
+            if (os.contains("win") && !darkTheme) {
+                System.out.println("Windows");
+                UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+            } else if (os.contains("win") && darkTheme) {
+                System.out.println("Windows Dark");
+                UIManager.setLookAndFeel("com.formdev.flatlaf.FlatDarkLaf");
+            } else if (os.contains("mac") && !darkTheme) {
+                UIManager.setLookAndFeel("com.sun.java.swing.plaf.mac.MacLookAndFeel");
+            } else if (os.contains("mac") && darkTheme) {
+                UIManager.setLookAndFeel("com.formdev.flatlaf.FlatDarkLaf");
+            } else if (os.contains("nux") && !darkTheme) {
+                UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+            } else if (os.contains("nux") && darkTheme) {
+                UIManager.setLookAndFeel("com.formdev.flatlaf.FlatDarkLaf");
+            }
+            SwingUtilities.updateComponentTreeUI(this);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

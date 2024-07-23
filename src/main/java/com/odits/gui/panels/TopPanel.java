@@ -1,6 +1,7 @@
 package com.odits.gui.panels;
 
 import com.odits.gui.components.CustomMenuItem;
+import com.odits.gui.frames.MainFrame;
 import com.odits.utils.IconLoader;
 
 import javax.swing.*;
@@ -9,12 +10,10 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.List;
 
 import static com.odits.utils.IconLoader.darkMode;
 
 public class TopPanel extends JPanel {
-    private MainPanel mainPanel;
     private boolean iconView = true;
     private static JLabel dirLabel = new JLabel();
     private JButton homeButton = new JButton();
@@ -24,10 +23,9 @@ public class TopPanel extends JPanel {
     private JToolBar toolBar = new JToolBar();
     private TopPanelListener topPanelListener;
 
-    public TopPanel(MainPanel mainPanel) {
+    public TopPanel(MainPanel mainPanel, ViewPanel viewPanel, MainFrame mainFrame) {
         super();
-        this.mainPanel = mainPanel;
-        topPanelListener = new TopPanelListener(mainPanel);
+        topPanelListener = new TopPanelListener(mainPanel,viewPanel);
 
         setLayout(new GridLayout(2, 1));
 
@@ -77,7 +75,9 @@ public class TopPanel extends JPanel {
         darkViewButton.setSelected(false);
         darkViewButton.addActionListener(e -> {
             darkMode = darkViewButton.isSelected();
+            mainFrame.setTheme(darkMode);
             setTheme(darkMode);
+            refreshButton.doClick();
         });
         viewMenu.add(darkViewButton);
 
@@ -161,9 +161,11 @@ public class TopPanel extends JPanel {
 
 class TopPanelListener implements ActionListener {
     private MainPanel mainPanel;
+    private ViewPanel viewPanel;
 
-    public TopPanelListener(MainPanel mainPanel) {
+    public TopPanelListener(MainPanel mainPanel, ViewPanel viewPanel) {
         this.mainPanel = mainPanel;
+        this.viewPanel = viewPanel;
     }
 
     @Override
@@ -224,9 +226,12 @@ class TopPanelListener implements ActionListener {
                 }
                 break;
             case "Copy":
-                String copyFileName = JOptionPane.showInputDialog(mainPanel, "Enter the name of the file to copy");
-                File fileToCopy = new File(mainPanel.getCurrentDirectory().getAbsolutePath() + File.separator + copyFileName);
-                System.out.println(fileToCopy);
+                if (!(viewPanel.getSelectedIconLabel() == null)) {
+                    System.out.println("Copying: " + viewPanel.getSelectedIconPath());
+                    String copyFileName = JOptionPane.showInputDialog(mainPanel, "Enter the name of the file to copy");
+                    File fileToCopy = new File(mainPanel.getCurrentDirectory().getAbsolutePath() + File.separator + copyFileName);
+                    System.out.println(fileToCopy);
+                }
                 break;
             case "Refresh":
                 mainPanel.reloadViewPanel(mainPanel.getCurrentDirectory().getAbsolutePath());
@@ -234,6 +239,19 @@ class TopPanelListener implements ActionListener {
                 if (mainPanel.getSplitPane().isVisible())
                     mainPanel.getSplitPane().setDividerLocation(200);
                 break;
+        }
+    }
+
+    private void copyFile(File file) {
+        if (file.isDirectory()) {
+            File[] files = file.listFiles();
+            if (files != null) {
+                for (File childFile : files) {
+                    if (childFile.isDirectory()) {
+                        copyFile(childFile);
+                    }
+                }
+            }
         }
     }
 }
