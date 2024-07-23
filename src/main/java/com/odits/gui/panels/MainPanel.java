@@ -17,21 +17,27 @@ import static com.odits.utils.IconLoader.darkMode;
 public class MainPanel extends JPanel {
     JTree tree = new JTree();
     JScrollPane treeScrollPane = new JScrollPane(tree);
-    ViewPanel viewPanel = new ViewPanel(System.getProperty("user.dir"), this);
-    JScrollPane viewScrollPane = new JScrollPane(viewPanel);
-    File currentDirectory = new File(System.getProperty("user.dir"));
+    File currentDirectory = new File(FileSystemView.getFileSystemView().getHomeDirectory().getAbsolutePath());
+    ViewPanel viewPanel;
+    JScrollPane viewScrollPane;
     JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
     public MainPanel() {
         super();
         GlobalKeyListener.initGlobalKeyListener(this);
         setLayout(new BorderLayout());
+        tree.setLayout(new BorderLayout());
+
+        if (System.getProperty("os.name").toLowerCase().contains("win")) {
+            currentDirectory = new File(currentDirectory.getParentFile().getParent());
+        }
 
         treeScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         treeScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
-
-        DefaultTreeModel treeModel = createTreeModel(new File(FileSystemView.getFileSystemView().getHomeDirectory().getAbsolutePath()));
+        DefaultTreeModel treeModel = createTreeModel(currentDirectory);
+        viewPanel = new ViewPanel(currentDirectory.getAbsolutePath(), this);
+        viewScrollPane = new JScrollPane(viewPanel);
         tree.setModel(treeModel);
         tree.addTreeSelectionListener(e -> {
             TreePath path = e.getPath();
@@ -48,6 +54,7 @@ public class MainPanel extends JPanel {
 
         splitPane.add(treeScrollPane);
         splitPane.add(viewScrollPane);
+        splitPane.setDividerLocation(200);
 
         this.add(splitPane);
         this.add(new TopPanel(this), BorderLayout.NORTH);
@@ -94,8 +101,10 @@ public class MainPanel extends JPanel {
             File[] files = file.listFiles();
             if (files != null) {
                 for (File childFile : files) {
-                    DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(childFile);
-                    node.add(childNode);
+                    if (childFile.isDirectory()) {
+                        DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(childFile);
+                        node.add(childNode);
+                    }
                 }
             }
         }
@@ -104,11 +113,15 @@ public class MainPanel extends JPanel {
     private void loadContents(File file, DefaultMutableTreeNode rootNode) {
         File[] contents = file.listFiles();
 
-        assert contents != null;
-        for (File f : contents) {
-            DefaultMutableTreeNode node = new DefaultMutableTreeNode(f);
-            rootNode.add(node);
-
+        if (contents == null || contents.length == 0) {
+            System.out.println("Directory is empty");
+        } else {
+            for (File f : contents) {
+                if (f.isDirectory()) {
+                    DefaultMutableTreeNode node = new DefaultMutableTreeNode(f);
+                    rootNode.add(node);
+                }
+            }
         }
     }
 
@@ -120,6 +133,10 @@ public class MainPanel extends JPanel {
             contents.add(f.getName());
         }
         return contents;
+    }
+
+    public JSplitPane getSplitPane() {
+        return splitPane;
     }
 }
 

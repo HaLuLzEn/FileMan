@@ -50,7 +50,7 @@ public class ViewPanel extends JPanel {
                     IconLabel ilabel = new IconLabel(file.getName(), new ImageIcon(icon.getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_SMOOTH)), JLabel.CENTER, file.getAbsolutePath());
                     ilabel.setVerticalTextPosition(JLabel.BOTTOM);
                     ilabel.setHorizontalTextPosition(JLabel.CENTER);
-                    ilabel.setComponentPopupMenu(new CustomPopupMenu());
+                    ilabel.setComponentPopupMenu(new CustomPopupMenu(this));
 
 
                     ilabel.addMouseListener(new MouseAdapter() {
@@ -74,7 +74,11 @@ public class ViewPanel extends JPanel {
                                 selectedLabel.setSelected(false);
                                 selectedLabel.setBorder(null);
                                 selectedLabel = ilabel;
-                                selectedLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                                if (darkMode)
+                                    selectedLabel.setBorder(BorderFactory.createLineBorder(Color.WHITE));
+                                 else
+                                    selectedLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+
                                 ilabel.setSelected(true);
                             }
                         }
@@ -103,6 +107,10 @@ public class ViewPanel extends JPanel {
                 }
             }
         }
+    }
+
+    public String getSelectedIconPath() {
+        return selectedLabel.getPath();
     }
 
     public static void executeFile(String filePath) {

@@ -16,12 +16,13 @@ import static com.odits.utils.IconLoader.darkMode;
 public class TopPanel extends JPanel {
     private MainPanel mainPanel;
     private boolean iconView = true;
-    private static JLabel dirLabel = new JLabel(System.getProperty("user.dir"));
+    private static JLabel dirLabel = new JLabel();
     private JButton homeButton = new JButton();
     private JButton parentButton = new JButton();
     private JButton copyButton = new JButton();
     private JToolBar toolBar = new JToolBar();
     private TopPanelListener topPanelListener;
+
     public TopPanel(MainPanel mainPanel) {
         super();
         this.mainPanel = mainPanel;
@@ -87,8 +88,6 @@ public class TopPanel extends JPanel {
         menuBar.add(viewMenu);
 
 
-
-
         toolBar.setFloatable(false);
 
         setTheme(darkViewButton.isSelected());
@@ -97,7 +96,7 @@ public class TopPanel extends JPanel {
         toolBar.add(parentButton);
         toolBar.add(copyButton);
 
-
+        dirLabel.setText(mainPanel.getCurrentDirectory().toString());
         toolBar.add(dirLabel);
 
         this.add(menuBar, 0);
@@ -155,9 +154,10 @@ public class TopPanel extends JPanel {
 class TopPanelListener implements ActionListener {
     private MainPanel mainPanel;
 
-    public TopPanelListener (MainPanel mainPanel) {
+    public TopPanelListener(MainPanel mainPanel) {
         this.mainPanel = mainPanel;
     }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         switch (e.getActionCommand()) {
@@ -177,7 +177,7 @@ class TopPanelListener implements ActionListener {
                 } else {
                     System.out.println("New File");
                 }
-                    break;
+                break;
             }
             case "Folder":
                 if (((CustomMenuItem) e.getSource()).isOpen()) {
@@ -190,12 +190,22 @@ class TopPanelListener implements ActionListener {
                 }
                 break;
             case "Tree":
-                mainPanel.getTreeScrollPane().setVisible(((JCheckBoxMenuItem) e.getSource()).isSelected());
+                boolean selected = ((JCheckBoxMenuItem) e.getSource()).isSelected();
+                mainPanel.getTreeScrollPane().setVisible(selected);
+                if (selected)
+                    mainPanel.getSplitPane().setDividerLocation(0);
+                else {
+                    mainPanel.getSplitPane().setDividerLocation(200);
+                    mainPanel.reloadViewPanel(mainPanel.getCurrentDirectory().getAbsolutePath());
+                    mainPanel.reloadTree(mainPanel.getCurrentDirectory());
+                }
+
                 mainPanel.repaint();
+                mainPanel.revalidate();
                 break;
             case "Home":
-                mainPanel.currentDirectory = FileSystemView.getFileSystemView().getHomeDirectory();
-                mainPanel.reloadViewPanel(mainPanel.currentDirectory.toString());
+                mainPanel.currentDirectory = new File(FileSystemView.getFileSystemView().getHomeDirectory().getParent());
+                mainPanel.reloadViewPanel(mainPanel.currentDirectory.getParent());
                 mainPanel.reloadTree(mainPanel.currentDirectory);
                 break;
             case "Parent":

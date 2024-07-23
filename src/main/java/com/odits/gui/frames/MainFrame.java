@@ -1,8 +1,11 @@
 package com.odits.gui.frames;
 
+import com.formdev.flatlaf.FlatLaf;
 import com.odits.gui.panels.MainPanel;
+import com.odits.utils.IconLoader;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileSystemView;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
@@ -17,10 +20,13 @@ public class MainFrame extends JFrame implements KeyListener {
             System.out.println(info.getClassName());
         }
 
+        ImageIcon windowIcon = IconLoader.loadIcon("/Icons/yoink.png");
+        setIconImage(windowIcon.getImage());
 
         try {
             if (System.getProperty("os.name").toLowerCase().contains("win")) {
-                UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+                UIManager.setLookAndFeel("com.formdev.flatlaf.themes.FlatMacDarkLaf");
+                //UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
             } else if (System.getProperty("os.name").toLowerCase().contains("mac")) {
                 UIManager.setLookAndFeel("com.sun.java.swing.plaf.mac.MacLookAndFeel");
             } else {
@@ -30,6 +36,8 @@ public class MainFrame extends JFrame implements KeyListener {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+
         add(new MainPanel());
         setLocationRelativeTo(null);
         setVisible(true);

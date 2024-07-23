@@ -1,13 +1,13 @@
 package com.odits.gui.components;
 
+import com.odits.gui.panels.ViewPanel;
 import com.odits.listeners.PopupListener;
 
 import javax.swing.*;
 
 public class CustomPopupMenu extends JPopupMenu {
-
-    public CustomPopupMenu() {
-        PopupListener popupListener = new PopupListener();
+    public CustomPopupMenu(ViewPanel viewPanel) {
+        PopupListener popupListener = new PopupListener(viewPanel);
 
         JMenuItem openItem = new JMenuItem("Open");
         openItem.addActionListener(popupListener);

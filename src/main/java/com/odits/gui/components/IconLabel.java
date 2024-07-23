@@ -22,4 +22,12 @@ public class IconLabel extends JLabel {
     public void setSelected(boolean selected) {
         isSelected = selected;
     }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
 }
