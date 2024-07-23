@@ -51,6 +51,7 @@ public class MainPanel extends JPanel {
 
         tree.setDragEnabled(true);
         tree.setCellRenderer(new FileCellRenderer());
+        System.out.println(tree.getLayout());
 
         splitPane.add(treeScrollPane);
         splitPane.add(viewScrollPane);
@@ -148,11 +149,21 @@ class FileCellRenderer extends JLabel implements TreeCellRenderer {
         if (currentNode != null && currentNode.isDirectory()) {
             setText(currentNode.getName());
             if (darkMode) {
-                ImageIcon icon = IconLoader.loadIcon("/Icons/folder-icon-dark.png");
+                ImageIcon icon;
+                if (isDrive(currentNode)) {
+                    icon = IconLoader.loadIcon("/Icons/drive-icon-dark.png");
+                } else {
+                    icon = IconLoader.loadIcon("/Icons/folder-icon-dark.png");
+                }
                 icon.setImage(icon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
                 setIcon(icon);
             } else {
-                ImageIcon icon = IconLoader.loadIcon("/Icons/folder-icon.png");
+                ImageIcon icon;
+                if (isDrive(currentNode)) {
+                    icon = IconLoader.loadIcon("/Icons/drive-icon.png");
+                } else {
+                    icon = IconLoader.loadIcon("/Icons/folder-icon.png");
+                }
                 icon.setImage(icon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
                 setIcon(icon);
             }
@@ -160,5 +171,15 @@ class FileCellRenderer extends JLabel implements TreeCellRenderer {
             setText(currentNode.getAbsoluteFile().getName());
         }
         return this;
+    }
+
+    private boolean isDrive(File file) {
+        File[] roots = File.listRoots();
+        for (File root : roots) {
+            if (root.equals(file)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

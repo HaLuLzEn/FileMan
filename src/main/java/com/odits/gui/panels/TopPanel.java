@@ -20,6 +20,7 @@ public class TopPanel extends JPanel {
     private JButton homeButton = new JButton();
     private JButton parentButton = new JButton();
     private JButton copyButton = new JButton();
+    private JButton refreshButton = new JButton();
     private JToolBar toolBar = new JToolBar();
     private TopPanelListener topPanelListener;
 
@@ -95,6 +96,7 @@ public class TopPanel extends JPanel {
         toolBar.add(homeButton);
         toolBar.add(parentButton);
         toolBar.add(copyButton);
+        toolBar.add(refreshButton);
 
         dirLabel.setText(mainPanel.getCurrentDirectory().toString());
         toolBar.add(dirLabel);
@@ -111,30 +113,33 @@ public class TopPanel extends JPanel {
         ImageIcon homeIcon;
         ImageIcon parentIcon;
         ImageIcon copyIcon;
+        ImageIcon refreshIcon;
 
         if (dark) {
             homeIcon = IconLoader.loadIcon("/Icons/Home-icon-dark.png");
-            homeIcon.setImage(homeIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
-            homeButton.setIcon(homeIcon);
 
             parentIcon = IconLoader.loadIcon("/Icons/back-arrow-dark.png");
-            parentIcon.setImage(parentIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
-            parentButton.setIcon(parentIcon);
 
             copyIcon = IconLoader.loadIcon("/Icons/copy-icon-dark.png");
+
+            refreshIcon = IconLoader.loadIcon("/Icons/refresh-icon-dark.png");
         } else {
             homeIcon = IconLoader.loadIcon("/Icons/Home-icon.png");
-            homeIcon.setImage(homeIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
-            homeButton.setIcon(homeIcon);
 
             parentIcon = IconLoader.loadIcon("/Icons/back-arrow.png");
-            parentIcon.setImage(parentIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
-            parentButton.setIcon(parentIcon);
 
             copyIcon = IconLoader.loadIcon("/Icons/copy.png");
+
+            refreshIcon = IconLoader.loadIcon("/Icons/refresh-icon.png");
         }
+        homeIcon.setImage(homeIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
+        homeButton.setIcon(homeIcon);
+        parentIcon.setImage(parentIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
+        parentButton.setIcon(parentIcon);
         copyIcon.setImage(copyIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
         copyButton.setIcon(copyIcon);
+        refreshIcon.setImage(refreshIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
+        refreshButton.setIcon(refreshIcon);
         repaint();
     }
 
@@ -148,6 +153,9 @@ public class TopPanel extends JPanel {
 
         copyButton.setActionCommand("Copy");
         copyButton.addActionListener(topPanelListener);
+
+        refreshButton.setActionCommand("Refresh");
+        refreshButton.addActionListener(topPanelListener);
     }
 }
 
@@ -209,13 +217,22 @@ class TopPanelListener implements ActionListener {
                 mainPanel.reloadTree(mainPanel.currentDirectory);
                 break;
             case "Parent":
-                mainPanel.reloadViewPanel(mainPanel.getCurrentDirectory().getParent());
-                mainPanel.reloadTree(mainPanel.getCurrentDirectory().getParentFile());
+                if (mainPanel.currentDirectory.getParent() != null) {
+                    mainPanel.currentDirectory = mainPanel.getCurrentDirectory().getParentFile();
+                    mainPanel.reloadViewPanel(mainPanel.getCurrentDirectory().getParent());
+                    mainPanel.reloadTree(mainPanel.getCurrentDirectory().getParentFile());
+                }
                 break;
             case "Copy":
                 String copyFileName = JOptionPane.showInputDialog(mainPanel, "Enter the name of the file to copy");
                 File fileToCopy = new File(mainPanel.getCurrentDirectory().getAbsolutePath() + File.separator + copyFileName);
                 System.out.println(fileToCopy);
+                break;
+            case "Refresh":
+                mainPanel.reloadViewPanel(mainPanel.getCurrentDirectory().getAbsolutePath());
+                mainPanel.reloadTree(mainPanel.getCurrentDirectory());
+                if (mainPanel.getSplitPane().isVisible())
+                    mainPanel.getSplitPane().setDividerLocation(200);
                 break;
         }
     }
