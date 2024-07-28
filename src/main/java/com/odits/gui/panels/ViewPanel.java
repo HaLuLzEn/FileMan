@@ -1,6 +1,5 @@
 package com.odits.gui.panels;
 
-import com.odits.gui.components.CustomMenuItem;
 import com.odits.gui.components.CustomPopupMenu;
 import com.odits.gui.components.CustomPopupMenuEmpty;
 import com.odits.gui.components.IconLabel;
@@ -13,14 +12,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 
 import static com.odits.Main.darkMode;
 
 public class ViewPanel extends JPanel {
-    private static final int ICON_SIZE = 32; // Size of the icon
-    private static final int ROWS = 5; // Rows set to 0 for variable number of rows
-    private static final int COLS = 4; // Adjust based on your needs
+    private static final int ICON_SIZE = 32;
+    private static final int ROWS = 5;
+    private static final int COLS = 4;
     private IconLabel selectedLabel = new IconLabel();
     private File currentFile;
     private boolean iconView = true;
@@ -30,13 +28,11 @@ public class ViewPanel extends JPanel {
         File dir = new File(directoryPath);
         this.setComponentPopupMenu(new CustomPopupMenuEmpty());
 
-
         if (dir.exists() && dir.isDirectory()) {
             File[] files = dir.listFiles();
 
             if (files != null) {
                 for (File file : files) {
-                    // Create an icon and label for each file
                     ImageIcon icon = (ImageIcon) FileSystemView.getFileSystemView().getSystemIcon(file);
                     if (file.isDirectory()) {
                         if (darkMode) {
@@ -48,6 +44,7 @@ public class ViewPanel extends JPanel {
                         }
                     }
                     IconLabel ilabel = new IconLabel(file.getName(), new ImageIcon(icon.getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_SMOOTH)), JLabel.CENTER, file.getAbsolutePath());
+                    System.out.println("Icon path: " + file.getAbsolutePath());
                     ilabel.setVerticalTextPosition(JLabel.BOTTOM);
                     ilabel.setHorizontalTextPosition(JLabel.CENTER);
                     ilabel.setComponentPopupMenu(new CustomPopupMenu(this, mainPanel));
@@ -61,6 +58,8 @@ public class ViewPanel extends JPanel {
                                     if (file.isDirectory()) {
                                         mainPanel.reloadViewPanel(file.getAbsolutePath());
                                         mainPanel.reloadTree(file.getAbsoluteFile());
+                                        currentFile = file;
+                                        selectedLabel.setSelected(false);
                                     } else {
                                         executeFile(file.getAbsolutePath());
                                     }
@@ -69,6 +68,7 @@ public class ViewPanel extends JPanel {
                                 }
                             } else if (selectedLabel == null && !ilabel.isSelected()) {
                                 selectedLabel = ilabel;
+                                currentFile = new File(ilabel.getPath());
                                 ilabel.setSelected(true);
                             } else {
                                 selectedLabel.setSelected(false);
@@ -76,13 +76,12 @@ public class ViewPanel extends JPanel {
                                 selectedLabel = ilabel;
                                 if (darkMode)
                                     selectedLabel.setBorder(BorderFactory.createLineBorder(Color.WHITE));
-                                 else
+                                else
                                     selectedLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
                                 ilabel.setSelected(true);
                             }
                         }
-
 
                         @Override
                         public void mouseEntered(MouseEvent e) {
@@ -99,11 +98,6 @@ public class ViewPanel extends JPanel {
                             ilabel.setBorder(null);
                             selectedLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
                             repaint();
-                        }
-
-                        @Override
-                        public void mouseDragged(MouseEvent e) {
-
                         }
                     });
                     add(ilabel);
@@ -149,5 +143,13 @@ public class ViewPanel extends JPanel {
 
     public void setIconView(boolean iconView) {
         this.iconView = iconView;
+    }
+
+    public File getCurrentFile() {
+        return currentFile;
+    }
+
+    public void setCUrrentFile(File currentFile) {
+        this.currentFile = currentFile;
     }
 }

@@ -9,7 +9,7 @@ import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
+import java.io.*;
 
 import static com.odits.Main.darkMode;
 
@@ -25,7 +25,7 @@ public class TopPanel extends JPanel {
 
     public TopPanel(MainPanel mainPanel, ViewPanel viewPanel, MainFrame mainFrame) {
         super();
-        topPanelListener = new TopPanelListener(mainPanel,viewPanel);
+        topPanelListener = new TopPanelListener(mainPanel, viewPanel);
 
         setLayout(new GridLayout(2, 1));
 
@@ -160,12 +160,12 @@ public class TopPanel extends JPanel {
 }
 
 class TopPanelListener implements ActionListener {
-    private MainPanel mainPanel;
-    private ViewPanel viewPanel;
+    private final MainPanel MAIN_PANEL;
+    private final ViewPanel VIEW_PANEL;
 
     public TopPanelListener(MainPanel mainPanel, ViewPanel viewPanel) {
-        this.mainPanel = mainPanel;
-        this.viewPanel = viewPanel;
+        this.MAIN_PANEL = mainPanel;
+        this.VIEW_PANEL = viewPanel;
     }
 
     @Override
@@ -178,7 +178,7 @@ class TopPanelListener implements ActionListener {
                 if (((CustomMenuItem) e.getSource()).isOpen()) {
                     JFileChooser fileChooser = new JFileChooser();
                     fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                    fileChooser.showDialog(mainPanel, "Open");
+                    fileChooser.showDialog(MAIN_PANEL, "Open");
                     try {
                         Runtime.getRuntime().exec(new String[]{"xdg-open", fileChooser.getSelectedFile().getAbsolutePath()});
                     } catch (Exception ex) {
@@ -193,65 +193,83 @@ class TopPanelListener implements ActionListener {
                 if (((CustomMenuItem) e.getSource()).isOpen()) {
                     JFileChooser fileChooser = new JFileChooser();
                     fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                    fileChooser.showDialog(mainPanel, "Open");
-                    mainPanel.reloadViewPanel(fileChooser.getSelectedFile().getAbsolutePath());
+                    fileChooser.showDialog(MAIN_PANEL, "Open");
+                    MAIN_PANEL.reloadViewPanel(fileChooser.getSelectedFile().getAbsolutePath());
                 } else {
-                    JOptionPane.showInputDialog(mainPanel, "Type the name of the new Directory", "Enter name", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showInputDialog(MAIN_PANEL, "Type the name of the new Directory", "Enter name", JOptionPane.INFORMATION_MESSAGE);
                 }
                 break;
             case "Tree":
                 boolean selected = ((JCheckBoxMenuItem) e.getSource()).isSelected();
-                mainPanel.getTreeScrollPane().setVisible(selected);
-                if (selected)
-                    mainPanel.getSplitPane().setDividerLocation(0);
+                MAIN_PANEL.getTreeScrollPane().setVisible(selected);
+                if (selected) MAIN_PANEL.getSplitPane().setDividerLocation(0);
                 else {
-                    mainPanel.getSplitPane().setDividerLocation(200);
-                    mainPanel.reloadViewPanel(mainPanel.getCurrentDirectory().getAbsolutePath());
-                    mainPanel.reloadTree(mainPanel.getCurrentDirectory());
+                    MAIN_PANEL.getSplitPane().setDividerLocation(200);
+                    MAIN_PANEL.reloadViewPanel(MAIN_PANEL.getCurrentDirectory().getAbsolutePath());
+                    MAIN_PANEL.reloadTree(MAIN_PANEL.getCurrentDirectory());
                 }
 
-                mainPanel.repaint();
-                mainPanel.revalidate();
+                MAIN_PANEL.repaint();
+                MAIN_PANEL.revalidate();
                 break;
             case "Home":
-                mainPanel.currentDirectory = new File(FileSystemView.getFileSystemView().getHomeDirectory().getParent());
-                mainPanel.reloadViewPanel(mainPanel.currentDirectory.getParent());
-                mainPanel.reloadTree(mainPanel.currentDirectory);
+                    String os = System.getProperty("os.name").toLowerCase();
+                    File currentDirectory;
+                    if (os.contains("win")) {
+                        currentDirectory = FileSystemView.getFileSystemView().getHomeDirectory().getParentFile();
+                        MAIN_PANEL.currentDirectory = new File(currentDirectory.getAbsolutePath());
+                        MAIN_PANEL.reloadViewPanel(currentDirectory.getAbsolutePath());
+                        MAIN_PANEL.reloadTree(currentDirectory);
+                    } else if (os.contains("nux") || os.contains("nix")) {
+                        currentDirectory = MAIN_PANEL.getCurrentDirectory();
+                        MAIN_PANEL.currentDirectory = FileSystemView.getFileSystemView().getHomeDirectory();
+                        MAIN_PANEL.reloadViewPanel(currentDirectory.getAbsolutePath());
+                        MAIN_PANEL.reloadTree(currentDirectory);
+                    }
                 break;
             case "Parent":
-                if (mainPanel.currentDirectory.getParent() != null) {
-                    mainPanel.currentDirectory = mainPanel.getCurrentDirectory().getParentFile();
-                    mainPanel.reloadViewPanel(mainPanel.getCurrentDirectory().getParent());
-                    mainPanel.reloadTree(mainPanel.getCurrentDirectory().getParentFile());
+                if (MAIN_PANEL.currentDirectory.getParent() != null) {
+                    File parentFile = MAIN_PANEL.getCurrentDirectory().getParentFile();
+                    MAIN_PANEL.currentDirectory = parentFile;
+                    MAIN_PANEL.reloadViewPanel(parentFile.getAbsolutePath());
+                    MAIN_PANEL.reloadTree(parentFile);
                 }
                 break;
             case "Copy":
-                if (!(viewPanel.getSelectedIconLabel() == null)) {
-                    System.out.println("Copying: " + viewPanel.getSelectedIconPath());
-                    String copyFileName = JOptionPane.showInputDialog(mainPanel, "Enter the name of the file to copy");
-                    File fileToCopy = new File(mainPanel.getCurrentDirectory().getAbsolutePath() + File.separator + copyFileName);
+                if (!(VIEW_PANEL.getCurrentFile() == null)) {
+                    System.out.println("Copying: " + VIEW_PANEL.getCurrentFile().getAbsolutePath());
+                    String copyFileName = JOptionPane.showInputDialog(MAIN_PANEL, "Enter the name of the file to copy");
+                    if (copyFileName == null) return;
+                    JFileChooser fileChooser = new JFileChooser();
+                    fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                    fileChooser.showDialog(MAIN_PANEL, "Select Directory");
+                    File dir = fileChooser.getSelectedFile();
+                    File fileToCopy = new File(dir + File.separator + copyFileName);
                     System.out.println(fileToCopy);
                 }
                 break;
             case "Refresh":
-                mainPanel.reloadViewPanel(mainPanel.getCurrentDirectory().getAbsolutePath());
-                mainPanel.reloadTree(mainPanel.getCurrentDirectory());
-                if (mainPanel.getSplitPane().isVisible())
-                    mainPanel.getSplitPane().setDividerLocation(200);
+                MAIN_PANEL.reloadViewPanel(MAIN_PANEL.getCurrentDirectory().getAbsolutePath());
+                MAIN_PANEL.reloadTree(MAIN_PANEL.getCurrentDirectory());
+                if (MAIN_PANEL.getSplitPane().isVisible()) MAIN_PANEL.getSplitPane().setDividerLocation(200);
                 break;
         }
     }
 
-    private void copyFile(File file) {
+    private void copyFile(File file, File destination) {
         if (file.isDirectory()) {
             File[] files = file.listFiles();
             if (files != null) {
                 for (File childFile : files) {
+                    File newDestination = new File(destination, childFile.getName());
                     if (childFile.isDirectory()) {
-                        copyFile(childFile);
+                        newDestination.mkdir();
                     }
+                    copyFile(childFile, newDestination);
                 }
             }
+        } else {
+
         }
     }
 }

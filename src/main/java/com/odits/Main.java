@@ -42,13 +42,13 @@ public class Main {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.contains("0x0")) {
-                    return true; // Dark theme
+                    return true; 
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return false; // Light theme
+        return false; 
     }
 
     private static boolean isMacDarkTheme() {
@@ -61,19 +61,19 @@ public class Main {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return false; // Light theme
+        return false; 
     }
 
     private static boolean isLinuxDarkTheme() {
         try {
-            ProcessBuilder builder = new ProcessBuilder("gsettings", "get", "org.gnome.desktop.interface", "gtk-theme");
+            ProcessBuilder builder = new ProcessBuilder("gsettings", "get", "org.gnome.desktop.interface", "color-scheme");
             Process process = builder.start();
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line = reader.readLine().toLowerCase();
-            return (line.contains("dark") || line.contains("black") || line.contains("dracula"));
+            return (line.contains("dark") || line.contains("black"));
         } catch (Exception e) {
             e.printStackTrace();
-            return false; // Default to light theme
+            return false; 
         }
     }
 }

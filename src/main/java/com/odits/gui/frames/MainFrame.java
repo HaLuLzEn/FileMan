@@ -9,6 +9,8 @@ import javax.swing.filechooser.FileSystemView;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
+import static com.odits.Main.darkMode;
+
 public class MainFrame extends JFrame implements KeyListener {
     public MainFrame() {
         super("File Mgr");
@@ -29,7 +31,12 @@ public class MainFrame extends JFrame implements KeyListener {
             } else if (System.getProperty("os.name").toLowerCase().contains("mac")) {
                 UIManager.setLookAndFeel("com.sun.java.swing.plaf.mac.MacLookAndFeel");
             } else {
-                UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+                if (darkMode) {
+                    UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+                } else {
+                    UIManager.setLookAndFeel("com.sun.java.swing.plaf.metal.MetalLookAndFeel");
+                }
+                
             }
             SwingUtilities.updateComponentTreeUI(this);
         } catch (Exception e) {
@@ -56,9 +63,9 @@ public class MainFrame extends JFrame implements KeyListener {
             } else if (os.contains("mac") && darkTheme) {
                 UIManager.setLookAndFeel("com.formdev.flatlaf.FlatDarkLaf");
             } else if (os.contains("nux") && !darkTheme) {
-                UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+                UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
             } else if (os.contains("nux") && darkTheme) {
-                UIManager.setLookAndFeel("com.formdev.flatlaf.FlatDarkLaf");
+                UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
             }
             SwingUtilities.updateComponentTreeUI(this);
         } catch (Exception e) {

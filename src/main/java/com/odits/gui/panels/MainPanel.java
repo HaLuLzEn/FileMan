@@ -23,6 +23,7 @@ public class MainPanel extends JPanel {
     ViewPanel viewPanel;
     JScrollPane viewScrollPane;
     JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+    TopPanel topPanel;
 
     public MainPanel(MainFrame mainFrame) {
         super();
@@ -63,12 +64,18 @@ public class MainPanel extends JPanel {
         splitPane.add(viewScrollPane);
         splitPane.setDividerLocation(200);
 
+        topPanel = new TopPanel(this, viewPanel, mainFrame);
+
         this.add(splitPane);
-        this.add(new TopPanel(this, viewPanel, mainFrame), BorderLayout.NORTH);
+        this.add(topPanel, BorderLayout.NORTH);
     }
 
     public JScrollPane getTreeScrollPane() {
         return treeScrollPane;
+    }
+
+    public TopPanel getTopPanel() {
+        return topPanel;
     }
 
     public void reloadTree(File directroy) {
@@ -95,6 +102,13 @@ public class MainPanel extends JPanel {
 
     public File getCurrentDirectory() {
         return new File(currentDirectory.getAbsolutePath());
+    }
+
+    public ViewPanel getViewPanel() {
+        return viewPanel;
+    }
+    public JScrollPane getViewScrollPane() {
+        return viewScrollPane;
     }
 
     private DefaultTreeModel createTreeModel(File rootDirectory) {
@@ -133,7 +147,7 @@ public class MainPanel extends JPanel {
     }
 
     public List<String> listContents(File file) {
-        List<String> contents = new ArrayList<String>();
+        List<String> contents = new ArrayList<>();
         File[] files = file.listFiles();
         assert files != null;
         for (File f : files) {
