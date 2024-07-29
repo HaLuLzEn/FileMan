@@ -27,9 +27,17 @@ public class MainFrame extends JFrame implements KeyListener {
 
         try {
             if (System.getProperty("os.name").toLowerCase().contains("win")) {
-                UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+                if (darkMode) {
+                    UIManager.setLookAndFeel("com.formdev.flatlaf.FlatDarkLaf");
+                } else {
+                    UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+                }
             } else if (System.getProperty("os.name").toLowerCase().contains("mac")) {
-                UIManager.setLookAndFeel("com.sun.java.swing.plaf.mac.MacLookAndFeel");
+                if (darkMode) {
+                    UIManager.setLookAndFeel("com.formdev.flatlaf.FlatDarkLaf");
+                } else {
+                    UIManager.setLookAndFeel("com.sun.java.swing.plaf.mac.MacLookAndFeel");
+                }
             } else {
                 if (darkMode) {
                     UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
